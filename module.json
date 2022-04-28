@@ -1,0 +1,18 @@
+{
+  "name": "attribute-bar-colors",
+  "title": "Attribute Bar Colors",
+  "description": "A simple module to adjust token attribute bar colors.",
+  "authors": [{"name": "Kurko#1535"}],
+  "version": "1.0",
+  "minimumCoreVersion": "0.8.8",
+  "compatibleCoreVersion":"9",
+  
+  "url": "https://github.com/BlauKreuz/attribute-bar-colors",
+  "manifest": "https://github.com/BlauKreuz/attribute-bar-colors/releases/download/v1.0/module.json",
+  "download": "https://github.com/BlauKreuz/attribute-bar-colors/releases/download/v1.0/attribute-bar-colors-v1.0.zip",
+  
+  "esmodules": ["attribute-bar-colors.js"],
+  "dependencies": [{"name": "lib-wrapper"}]
+
+
+}
