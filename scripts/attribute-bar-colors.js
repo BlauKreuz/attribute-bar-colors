@@ -50,7 +50,7 @@ function  _drawCBar_Override(number, bar, data) {
   
   Hooks.once('setup', function () {
 
-    libWrapper.register(MODULE_ID, 'Token.prototype._drawBars', _drawBar_Overrides, "OVERRIDE")
+    libWrapper.register(MODULE_ID, 'Token.prototype._drawBars', _drawBars_Override, "OVERRIDE")
 
     console.log(`Attribute Bar Colors v1.0 | initialized`)
 })
