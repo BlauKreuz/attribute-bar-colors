@@ -1,7 +1,7 @@
 {
   "name": "attribute-bar-colors",
-  "title": "Attribute Bar Colors",
-  "description": "A simple module to adjust token attribute bar colors.",
+  "title": "Attribute Bar Colors for Tokens",
+  "description": "A simple module to adjust token attribute bar colors. Different colors can be set for almost empty and full cases.",
   "authors": [{"name": "Kurko#1535"}],
   "version": "1.0",
   "minimumCoreVersion": "0.8.8",
@@ -13,6 +13,5 @@
   
   "esmodules": ["scripts/attribute-bar-colors.js"],
   "dependencies": [{"name": "lib-wrapper"}]
-
 
 }
