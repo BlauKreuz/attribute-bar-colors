@@ -3,7 +3,10 @@ const MODULE_ID = 'attribute-bar-colors';
     function drawBars_Override() {	
     if ( !this.actor || (this.data.displayBars === CONST.TOKEN_DISPLAY_MODES.NONE) ) return;
     ["bar1", "bar2"].forEach((b, i) => {
-      const bar = this.hud.bars[b];
+		
+		if (this.hud?.bars || this.bars)
+		{
+      const bar = (this.hud?.bars[b] || this.bars[b]);
       const attr = this.document.getBarAttribute(b);
       if ( !attr || (attr.type !== "bar") ) return bar.visible = false;
 	  	  
@@ -37,18 +40,11 @@ const MODULE_ID = 'attribute-bar-colors';
 	const G2= bar2e[1] + ((pct) *(bar2f[1] - bar2e[1]));
 	const B2= bar2e[2] + ((pct) *(bar2f[2] - bar2e[2]));	
 	
-    // Change health bar to red for Shadowrun 5e
+    // Set calculated colors for each attribute bar
     let color;		
- /*
-	if ( number === 0 ) color = PIXI.utils.rgb2hex([0.5 + (0.5 * pct), (0.2 * pct), (0.2 * pct)]);
-    else color = PIXI.utils.rgb2hex([(0.3 * pct), (0.3 * pct), 0.5 + (0.5 * pct)]);
-*/	
 	if ( number === 0 ) color = PIXI.utils.rgb2hex([R1,G1,B1]);
     else color = PIXI.utils.rgb2hex([R2,G2,B2]);
 	
-console.log("E: ", bar1e[0]*255, bar1e[1]*255, bar1e[2]*255);
-console.log("F: ", bar1f[0]*255, bar1f[1]*255, bar1f[2]*255);
-console.log("RGB: ",R1*255, G1*255, B1*255);
     // Draw the bar
     bar.clear()
     bar.beginFill(blk, 0.5).lineStyle(bs, blk, 1.0).drawRoundedRect(0, 0, this.w, h, 3)
@@ -59,11 +55,11 @@ console.log("RGB: ",R1*255, G1*255, B1*255);
     bar.position.set(0, posY);
   
       bar.visible = true;
+		}
     });
   }
   
-
-
+  
 Hooks.once('init', function () {
 
 
@@ -112,8 +108,6 @@ Hooks.once('init', function () {
 
 })
 
-
-
   Hooks.once('setup', function () {
 
     libWrapper.register(MODULE_ID, 'Token.prototype.drawBars', drawBars_Override, "OVERRIDE")
@@ -122,7 +116,6 @@ Hooks.once('init', function () {
 	
 
 })
-
 
 Hooks.once('ready', () => {
     try{window.Ardittristan.ColorSetting.tester} catch {
