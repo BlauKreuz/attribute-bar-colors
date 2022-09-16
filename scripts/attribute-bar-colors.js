@@ -1,6 +1,7 @@
 const MODULE_ID = 'attribute-bar-colors';
 
-    function drawBars_Override() {	
+
+function drawBars_Override() {	
     if ( !this.actor || (this.data.displayBars === CONST.TOKEN_DISPLAY_MODES.NONE) ) return;
     ["bar1", "bar2"].forEach((b, i) => {
 		
@@ -21,7 +22,7 @@ const MODULE_ID = 'attribute-bar-colors';
     const w = this.w;
     const bs = Math.clamped(h / 8, 1, 2);
     if ( this.data.height >= 2 ) h *= 1.6;  // Enlarge the bar for large tokens
-
+   
     // Determine the color to use
     const blk = 0x000000;
 
@@ -44,24 +45,108 @@ const MODULE_ID = 'attribute-bar-colors';
     let color;		
 	if ( number === 0 ) color = PIXI.utils.rgb2hex([R1,G1,B1]);
     else color = PIXI.utils.rgb2hex([R2,G2,B2]);
-	
+
+	const frameMargin = (game.settings.get(MODULE_ID, 'frame-margin'));	
+	const barScale = (game.settings.get(MODULE_ID, 'bar-scale')); 
+	const barH = h * barScale;
+
+    	if ( this.data.height < 1 ) h *= (0.8 * barScale ) ;  // Decrease the bar for small tokens
+
+	const barBorderAlpha = (game.settings.get(MODULE_ID, 'bar-border-alpha'));
+	const barBackgroundAlpha = (game.settings.get(MODULE_ID, 'bar-background-alpha')); 
+	const barBackgroundBorderAlpha = (game.settings.get(MODULE_ID, 'bar-background-border-alpha')); 
+
     // Draw the bar
     bar.clear()
-    bar.beginFill(blk, 0.5).lineStyle(bs, blk, 1.0).drawRoundedRect(0, 0, this.w, h, 3)
-    bar.beginFill(color, 1.0).lineStyle(bs, blk, 1.0).drawRoundedRect(0, 0, pct*w, h, 2)
+      bar.beginFill(blk, barBackgroundAlpha).lineStyle(bs, blk, barBackgroundBorderAlpha).drawRoundedRect(0, 0, this.w -2*frameMargin, barH, 3)
+      bar.beginFill(color, 1.0).lineStyle(bs, blk, barBorderAlpha).drawRoundedRect(0, 0, pct*w - pct*2*frameMargin, barH, 2)
 
     // Set position
-    let posY = number === 0 ? this.h - h : 0;
-    bar.position.set(0, posY);
-  
-      bar.visible = true;
+    let posY = number === 0 ? this.h - barH - frameMargin : 0 + frameMargin;
+    bar.position.set(0 + frameMargin, posY);  
+    bar.visible = true;
 		}
     });
   }
-  
+
+
+
+function _refreshBorder_Override() {
+    this.border.clear();
+    const borderColor = this._getBorderColor();
+    if( !borderColor ) return;
+
+	const frameScale = Math.round(game.settings.get(MODULE_ID, 'frame-scale')); 
+	const frameAlpha = (game.settings.get(MODULE_ID, 'frame-alpha'));
+
+	const frameBlkBorderAlpha = (game.settings.get(MODULE_ID, 'frameblk-border-alpha'));
+	const borderFillSelected = (game.settings.get(MODULE_ID, 'border-fill-selected')); 
+	const borderFillHover = (game.settings.get(MODULE_ID, 'border-fill-hover'));
+
+	const t = Math.round(CONFIG.Canvas.objectBorderThickness * frameScale);
+	const frameMargin = (game.settings.get(MODULE_ID, 'frame-margin'));
+
+    
+    // Draw Hex border for size 1 tokens on a hex grid
+    const gt = CONST.GRID_TYPES;
+    const hexTypes = [gt.HEXEVENQ, gt.HEXEVENR, gt.HEXODDQ, gt.HEXODDR];
+    if ( hexTypes.includes(canvas.grid.type) && (this.data.width === 1) && (this.data.height === 1) ) {
+      const polygon = canvas.grid.grid.getPolygon(-1+frameMargin, -1+frameMargin, this.w+2-2*frameMargin, this.h+2-2*frameMargin);
+
+    this.border.lineStyle(t, 0x000000, frameBlkBorderAlpha).drawPolygon(polygon);
+
+    if (this._controlled) {
+      this.border.beginFill(borderColor, borderFillSelected).lineStyle(t/2, borderColor, frameAlpha).drawPolygon(polygon);
+      } else {
+      this.border.beginFill(borderColor, borderFillHover).lineStyle(t/2, borderColor, frameAlpha).drawPolygon(polygon);
+      }
+    }
+
+    // Otherwise Draw Square border
+    else {
+
+	const frameScale = Math.round(game.settings.get(MODULE_ID, 'frame-scale'));
+	const frameAlpha = (game.settings.get(MODULE_ID, 'frame-alpha'));
+
+	const frameBlkBorderAlpha = (game.settings.get(MODULE_ID, 'frameblk-border-alpha'));
+	const borderFillSelected = (game.settings.get(MODULE_ID, 'border-fill-selected'));
+	const borderFillHover = (game.settings.get(MODULE_ID, 'border-fill-hover'));
+
+      const h = Math.round(t/2);
+      const o = Math.round( -(h/2) + frameMargin);
+
+	this.border.lineStyle(t, 0x000000, frameBlkBorderAlpha).drawRoundedRect(o, o, (this.w+h)-2*frameMargin, (this.h+h)-2*frameMargin, 3);
+      if (this._controlled) {
+	this.border.beginFill(borderColor, borderFillSelected).lineStyle(h, borderColor, frameAlpha).drawRoundedRect(o, o, (this.w+h)-2*frameMargin, (this.h+h)-2*frameMargin, 3);
+      } else {
+        this.border.beginFill(borderColor, borderFillHover).lineStyle(h, borderColor, frameAlpha).drawRoundedRect(o, o, (this.w+h)-2*frameMargin, (this.h+h)-2*frameMargin, 3);
+      }
+
+    }
+  }
+
+
+
+function _getBorderColor_Override() {
+
+    const gmDisposition = (game.settings.get(MODULE_ID, 'gm-disposition'));
+ 
+    const colors = CONFIG.Canvas.dispositionColors;
+      if ( this._controlled && !gmDisposition ) return colors.CONTROLLED;
+      else if ( this._hover || this._controlled) {
+         let d = parseInt(this.data.disposition);  // change for disposition color option
+         if (!game.user.isGM && this.isOwner) return colors.CONTROLLED;
+         else if (this.actor?.hasPlayerOwner) return colors.PARTY;
+         else if (d === CONST.TOKEN_DISPOSITIONS.FRIENDLY) return colors.FRIENDLY;
+         else if (d === CONST.TOKEN_DISPOSITIONS.NEUTRAL) return colors.NEUTRAL;
+         else return colors.HOSTILE;
+      }
+   else return null;
+  }
+
+
   
 Hooks.once('init', function () {
-
 
 	new window.Ardittristan.ColorSetting(MODULE_ID, 'bar2empty', {
     name: "Token Bar 2 (above)",
@@ -95,7 +180,7 @@ Hooks.once('init', function () {
 
 	new window.Ardittristan.ColorSetting(MODULE_ID, 'bar1full', {
     name: "Token Bar 1 (below)",
-	hint: "Each bar color will be calculated based on current status between 0 and max value of the attribute. Scene reload is needed for the changes to take effect!", 
+	hint: ".....Each bar color will be calculated based on current status between 0 and max value of the attribute. Scene reload is needed for the changes to take effect!", 
 	label: "Full Bar",
 	restricted: true,                  // Restrict to gamemaster only?
     defaultColor: "#a50000ff",          // The default color of the setting
@@ -104,18 +189,183 @@ Hooks.once('init', function () {
 	onChange: (value) => {},            // A callback function
 	})
 
+// Bars' and border's options
 
+const debouncedReload = foundry.utils.debounce(() => window.location.reload(), 500);
 
+    game.settings.register(MODULE_ID, "bar-scale", {
+        name: 'BAR HEIGHT scaling',
+        hint: '. . . 0.5 - 1.5 (Core default 1)',
+        scope: "world",
+        config: true,
+        default: 1,
+        type: Number,
+        range: {
+            min: 0.5,
+            max: 1.5,
+            step: 0.1
+        },
+        onChange: () => {debouncedReload();}
+    });
+
+    game.settings.register(MODULE_ID, "bar-border-alpha", {
+        name: 'BAR BORDER alpha',
+        hint: '. . . (Core default 1). The bar itself will remain opaque',
+        scope: "world",
+        config: true,
+        default: 1,
+        type: Number,
+        range: {
+            min: 0,
+            max: 1,
+            step: 0.1
+        },
+        onChange: () => {debouncedReload();}
+    });
+
+    game.settings.register(MODULE_ID, "bar-background-alpha", {
+        name: 'BAR BACKGROUND alpha',
+        hint: '. . . (Core default 0.5)',
+        scope: "world",
+        config: true,
+        default: 0.5,
+        type: Number,
+        range: {
+            min: 0,
+            max: 1,
+            step: 0.1
+        },
+        onChange: () => {debouncedReload();}
+    });
+
+    game.settings.register(MODULE_ID, "bar-background-border-alpha", {
+        name: 'BAR BACKGROUND BORDER alpha',
+        hint: '. . . (Core default 1)',
+        scope: "world",
+        config: true,
+        default: 1,
+        type: Number,
+        range: {
+            min: 0,
+            max: 1,
+            step: 0.1
+        },
+        onChange: () => {debouncedReload();}
+    });
+
+    game.settings.register(MODULE_ID, "frame-scale", {
+        name: 'Token FRAME THICKNESS',
+        hint: '. . . Selected and hovered-over tokens ½ / 1 / 1½ / 2 / 2½ / 3 (Core default 1)',
+        scope: "world",
+        config: true,
+        default: 1,
+        type: Number,
+        range: {
+            min: 0.5,
+            max: 3,
+            step: 0.5
+        },
+        onChange: () => {debouncedReload();}
+    });
+
+    game.settings.register(MODULE_ID, "frame-alpha", {
+        name: 'Token FRAME alpha',
+        hint: '. . . Selected and hovered-over tokens (Core default 1)',
+        scope: "world",
+        config: true,
+        default: 1,
+        type: Number,
+        range: {
+            min: 0,
+            max: 1,
+            step: 0.1
+        },
+        onChange: () => {debouncedReload();}
+    });
+
+    game.settings.register(MODULE_ID, "frameblk-border-alpha", {
+        name: 'Token FRAME BORDER alpha',
+        hint: '. . . Selected and hovered-over tokens (Core default 1)',
+        scope: "world",
+        config: true,
+        default: 1,
+        type: Number,
+        range: {
+            min: 0,
+            max: 1,
+            step: 0.1
+        },
+        onChange: () => {debouncedReload();}
+    });
+
+    game.settings.register(MODULE_ID, "frame-margin", {
+        name: 'Token FRAME MARGIN for GRIDS',
+        hint: '. . . Margin between token frame and grid (Core default 0) ',
+        scope: "world",
+        config: true,
+        default: 0,
+        type: Number,
+        range: {
+            min: 0,
+            max: 20,
+            step: 5
+        },
+        onChange: () => {debouncedReload();}
+    });
+
+    game.settings.register(MODULE_ID, 'border-fill-selected', {
+        name: 'SELECTED BACKGROUND alpha',
+	hint: '. . . Selected tokens get a translucent background (0-0.5). Only GM.',
+        scope: "client",
+        config: true,
+        default: 0,
+        type: Number,
+        range: {
+            min: 0,
+            max: 0.5,
+            step: 0.1
+        },
+        onChange: () => {debouncedReload();}
+    });
+
+    game.settings.register(MODULE_ID, 'border-fill-hover', {
+        name: 'HOVERED BACKGROUND alpha',
+	hint: '. . . Hovered-over tokens get a translucent background (0-0.5). Only GM.',
+        scope: "client",
+        config: true,
+        default: 0,
+        type: Number,
+        range: {
+            min: 0,
+            max: 0.5,
+            step: 0.1
+        },
+        onChange: () => {debouncedReload();}
+    });
+
+    game.settings.register(MODULE_ID, 'gm-disposition', {
+        name: 'Disposition color for selected icons',
+	hint: '. . . Show selected tokens with disposition color instead of default selected color (Orange). Only GM.',
+        scope: "client",
+        config: true,
+        default: false,
+        type: Boolean,
+        onChange: () => {debouncedReload();}
+    });
 })
 
-  Hooks.once('setup', function () {
 
-    libWrapper.register(MODULE_ID, 'Token.prototype.drawBars', drawBars_Override, "OVERRIDE")
+Hooks.once('setup', function () {
 
-    console.log(`Attribute Bar Colors v1.0 | initialized`)
-	
+    libWrapper.register(MODULE_ID, 'Token.prototype.drawBars', drawBars_Override, "OVERRIDE");
 
+    libWrapper.register(MODULE_ID, 'Token.prototype._refreshBorder', _refreshBorder_Override, "OVERRIDE");
+
+    libWrapper.register(MODULE_ID, 'Token.prototype._getBorderColor', _getBorderColor_Override, "OVERRIDE");
+
+    console.log(`Attribute Bar Colors v1.0 | initialized`);
 })
+
 
 Hooks.once('ready', () => {
     try{window.Ardittristan.ColorSetting.tester} catch {
