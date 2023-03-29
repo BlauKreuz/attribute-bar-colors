@@ -1,3 +1,5 @@
+## 2.0 - 29 Mar 2023 - Foundry v10 compatibility
+
 ## 1.1 - 16 Sep 2022 - Additional features
 Visual features of attribute bars and token frame can be customized
 
