@@ -7,6 +7,7 @@ Scene reload is needed for the changes to take effect.
 
 ![AttributeBarColors](https://user-images.githubusercontent.com/96351604/165970298-d223b60d-4227-4210-8386-a8c2d7383aec.PNG)
 
+## Foundry v10 compatibility v2.0
 
 ## Additional features v1.1
 
