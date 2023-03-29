@@ -3,13 +3,13 @@
   "title": "Attribute Bar Colors for Tokens",
   "description": "A simple module to adjust token attribute bar colors. Different colors can be set for almost empty and full cases. Additional features added for tuning sizes and alphas for bars and token frame.",
   "authors": [{"name": "Kurko#1535"}],
-  "version": "1.1",
-  "minimumCoreVersion": "9",
-  "compatibleCoreVersion":"9",
+  "version": "2.0",
+  "minimumCoreVersion": "10",
+  "compatibleCoreVersion":"10",
   
   "url": "https://github.com/BlauKreuz/attribute-bar-colors",
-  "manifest": "https://github.com/BlauKreuz/attribute-bar-colors/releases/download/v1.1/module.json",
-  "download": "https://github.com/BlauKreuz/attribute-bar-colors/releases/download/v1.1/attribute-bar-colors-v1.1.zip",
+  "manifest": "https://github.com/BlauKreuz/attribute-bar-colors/releases/download/v2.0/module.json",
+  "download": "https://github.com/BlauKreuz/attribute-bar-colors/releases/download/v2.0/attribute-bar-colors-v2.0.zip",
   
   "esmodules": ["scripts/attribute-bar-colors.js"],
   "dependencies": [{"name": "lib-wrapper"}]
