@@ -6,10 +6,8 @@ function drawBars_Override() {
 		return this.bars.visible = false;
 	}
     ["bar1", "bar2"].forEach((b, i) => {
-		
-		if (this.hud?.bars || this.bars)
 		{
-      const bar = (this.hud?.bars[b] || this.bars[b]);
+      const bar = this.bars[b];
       const attr = this.document.getBarAttribute(b);
       if ( !attr || (attr.type !== "bar") ) return bar.visible = false;
 	  	  
@@ -17,12 +15,12 @@ function drawBars_Override() {
 	  let data = attr;
 	    	  
 	const val = Number(data.value);
-    const pct = Math.clamped(val, 0, data.max) / data.max;
+    const pct = Math.clamp(val, 0, data.max) / data.max;
 
     // Determine sizing
     let h = Math.max((canvas.dimensions.size / 12), 8);
     const w = this.w;
-    const bs = Math.clamped(h / 8, 1, 2);
+    const bs = Math.clamp(h / 8, 1, 2);
     if ( this.document.height >= 2 ) h *= 1.6;  // Enlarge the bar for large tokens
    
     // Determine the color to use
@@ -47,8 +45,8 @@ function drawBars_Override() {
 	
     // Set calculated colors for each attribute bar
     let color;		
-	if ( number === 0 ) color = PIXI.utils.rgb2hex([R1,G1,B1]);
-    else color = PIXI.utils.rgb2hex([R2,G2,B2]);
+	if ( number === 0 ) color = Color.fromRGB([R1,G1,B1]);
+    else color = Color.fromRGB([R2,G2,B2]);
 
 	const frameMargin = (game.settings.get(MODULE_ID, 'frame-margin'));	
 	const barScale = (game.settings.get(MODULE_ID, 'bar-scale')); 
@@ -61,9 +59,9 @@ function drawBars_Override() {
 	const barBackgroundBorderAlpha = (game.settings.get(MODULE_ID, 'bar-background-border-alpha')); 
 
     // Draw the bar
-    bar.clear()
-      bar.beginFill(blk, barBackgroundAlpha).lineStyle(bs, blk, barBackgroundBorderAlpha).drawRoundedRect(0, 0, this.w -2*frameMargin, barH, 3)
-      bar.beginFill(color, 1.0).lineStyle(bs, blk, barBorderAlpha).drawRoundedRect(0, 0, pct*w - pct*2*frameMargin, barH, 2)
+    bar.clear();
+    bar.beginFill(blk, barBackgroundAlpha).lineStyle(bs, blk, barBackgroundBorderAlpha).drawRoundedRect(0, 0, this.w - 2*frameMargin, barH, 3);
+    bar.beginFill(color, 1.0).lineStyle(bs, blk, barBorderAlpha).drawRoundedRect(0, 0, pct*w - pct*2*frameMargin, barH, 2);
 
     // Set position
     let posY = number === 0 ? this.h - barH - frameMargin : 0 + frameMargin;
@@ -76,23 +74,9 @@ function drawBars_Override() {
 
 
 
-function refreshHUD_Override({bars=true, border=true, effects=true, elevation=true, nameplate=true}={}) {
-    if ( bars ) this.drawBars();
-    if ( effects ) this._refreshEffects();
-    if ( elevation ) {
-      const tt = this._getTooltipText();
-      if ( tt !== this.tooltip.text ) this.tooltip.text = tt;
-      this.tooltip.position.set(this.w / 2, -2);
-    }
-    if ( nameplate ) {
-      if ( this.document.name !== this.nameplate.text ) this.nameplate.text = this.document.name;
-      this.nameplate.position.set(this.w / 2, this.h + 2);
-      this.nameplate.visible = this._canViewMode(this.document.displayName);
-    }
-	if ( border ) { // this is the overridden part for various parameters
+function _refreshBorder_Override() {
     this.border.clear();
-    this.border.position.set(this.document.x, this.document.y);
-    if ( !this.visible ) return;		
+    if ( !this.visible ) return;
     const borderColor = this._getBorderColor();
     if( !borderColor ) return;
 	const frameScale = Math.round(game.settings.get(MODULE_ID, 'frame-scale')); 
@@ -106,10 +90,8 @@ function refreshHUD_Override({bars=true, border=true, effects=true, elevation=tr
     // Draw Hex border for size 1 tokens on a hex grid
     if ( canvas.grid.isHex ) {
 		
-    const gt = CONST.GRID_TYPES;
-    const hexTypes = [gt.HEXEVENQ, gt.HEXEVENR, gt.HEXODDQ, gt.HEXODDR];
-    if ( hexTypes.includes(canvas.grid.type) && (this.document.width === 1) && (this.document.height === 1) ) {
-      const polygon = canvas.grid.grid.getPolygon(-1+frameMargin, -1+frameMargin, this.w+2-2*frameMargin, this.h+2-2*frameMargin);
+    if ( (this.document.width === 1) && (this.document.height === 1) ) {
+      const polygon = canvas.grid.getPolygon(-1+frameMargin, -1+frameMargin, this.w+2-2*frameMargin, this.h+2-2*frameMargin);
 
     this.border.lineStyle(t, 0x000000, frameBlkBorderAlpha).drawPolygon(polygon);
 
@@ -123,14 +105,6 @@ function refreshHUD_Override({bars=true, border=true, effects=true, elevation=tr
 
     // Otherwise Draw Square border
     else {
-
-	const frameScale = Math.round(game.settings.get(MODULE_ID, 'frame-scale'));
-	const frameAlpha = (game.settings.get(MODULE_ID, 'frame-alpha'));
-
-	const frameBlkBorderAlpha = (game.settings.get(MODULE_ID, 'frameblk-border-alpha'));
-	const borderFillSelected = (game.settings.get(MODULE_ID, 'border-fill-selected'));
-	const borderFillHover = (game.settings.get(MODULE_ID, 'border-fill-hover'));
-
       const h = Math.round(t/2);
       const o = Math.round( -(h/2) + frameMargin);
 
@@ -140,9 +114,7 @@ function refreshHUD_Override({bars=true, border=true, effects=true, elevation=tr
       } else {
         this.border.beginFill(borderColor, borderFillHover).lineStyle(h, borderColor, frameAlpha).drawRoundedRect(o, o, (this.w+h)-2*frameMargin, (this.h+h)-2*frameMargin, 3);
       }
-
     }
-	}
 }
 
 
@@ -152,7 +124,7 @@ function _getBorderColor_Override({hover}={}) {
     const colors = CONFIG.Canvas.dispositionColors;
 	
       if ( this.controlled && !gmDisposition ) return colors.CONTROLLED;	  
-      else if ( (this.controlled && gmDisposition) || (hover ?? this.hover) || canvas.tokens._highlight ) {
+      else if ( (this.controlled && gmDisposition) || (hover ?? this.hover) || canvas.tokens.highlightObjects ) {
          let d = parseInt(this.document.disposition);  // change for disposition color option
          if (!game.user.isGM && this.isOwner) return colors.CONTROLLED;
          else if (this.actor?.hasPlayerOwner) return colors.PARTY;
@@ -377,7 +349,7 @@ Hooks.once('setup', function () {
 
     libWrapper.register(MODULE_ID, 'Token.prototype.drawBars', drawBars_Override, "OVERRIDE");
 
-    libWrapper.register(MODULE_ID, 'Token.prototype.refreshHUD', refreshHUD_Override, "OVERRIDE");
+    libWrapper.register(MODULE_ID, 'Token.prototype._refreshBorder', _refreshBorder_Override, "OVERRIDE");
 
     libWrapper.register(MODULE_ID, 'Token.prototype._getBorderColor', _getBorderColor_Override, "OVERRIDE");
 
