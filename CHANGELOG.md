@@ -1,3 +1,5 @@
+## 3.1 - 15 Mar 2026 - Fix for token border drawing
+
 ## 3.0 - 14 Mar 2026 - Foundry v13 compatibility
 
 ## 2.0 - 29 Mar 2023 - Foundry v10 compatibility
