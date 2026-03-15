@@ -77,8 +77,6 @@ function drawBars_Override() {
 function _refreshBorder_Override() {
     this.border.clear();
     if ( !this.visible ) return;
-    const borderColor = this._getBorderColor();
-    if( !borderColor ) return;
 	const frameScale = Math.round(game.settings.get(MODULE_ID, 'frame-scale')); 
 	const frameAlpha = (game.settings.get(MODULE_ID, 'frame-alpha'));
 	const frameBlkBorderAlpha = (game.settings.get(MODULE_ID, 'frameblk-border-alpha'));
@@ -86,20 +84,17 @@ function _refreshBorder_Override() {
 	const borderFillHover = (game.settings.get(MODULE_ID, 'border-fill-hover'));
 	const t = Math.round(CONFIG.Canvas.objectBorderThickness * frameScale);
 	const frameMargin = (game.settings.get(MODULE_ID, 'frame-margin'));
+	// Use white so that _refreshState's tint (from _getBorderColor) produces the correct colour
+	const fillAlpha = this.controlled ? borderFillSelected : borderFillHover;
     
     // Draw Hex border for size 1 tokens on a hex grid
-    if ( canvas.grid.isHex ) {
+    if ( canvas.grid.isHexagonal ) {
 		
     if ( (this.document.width === 1) && (this.document.height === 1) ) {
       const polygon = canvas.grid.getPolygon(-1+frameMargin, -1+frameMargin, this.w+2-2*frameMargin, this.h+2-2*frameMargin);
 
     this.border.lineStyle(t, 0x000000, frameBlkBorderAlpha).drawPolygon(polygon);
-
-    if (this.controlled) {
-      this.border.beginFill(borderColor, borderFillSelected).lineStyle(t/2, borderColor, frameAlpha).drawPolygon(polygon);
-      } else {
-      this.border.beginFill(borderColor, borderFillHover).lineStyle(t/2, borderColor, frameAlpha).drawPolygon(polygon);
-      }
+    this.border.beginFill(0xFFFFFF, fillAlpha).lineStyle(t/2, 0xFFFFFF, frameAlpha).drawPolygon(polygon);
     }
 	}
 
@@ -109,22 +104,18 @@ function _refreshBorder_Override() {
       const o = Math.round( -(h/2) + frameMargin);
 
 	this.border.lineStyle(t, 0x000000, frameBlkBorderAlpha).drawRoundedRect(o, o, (this.w+h)-2*frameMargin, (this.h+h)-2*frameMargin, 3);
-      if (this.controlled) {
-	this.border.beginFill(borderColor, borderFillSelected).lineStyle(h, borderColor, frameAlpha).drawRoundedRect(o, o, (this.w+h)-2*frameMargin, (this.h+h)-2*frameMargin, 3);
-      } else {
-        this.border.beginFill(borderColor, borderFillHover).lineStyle(h, borderColor, frameAlpha).drawRoundedRect(o, o, (this.w+h)-2*frameMargin, (this.h+h)-2*frameMargin, 3);
-      }
+	this.border.beginFill(0xFFFFFF, fillAlpha).lineStyle(h, 0xFFFFFF, frameAlpha).drawRoundedRect(o, o, (this.w+h)-2*frameMargin, (this.h+h)-2*frameMargin, 3);
     }
 }
 
 
-function _getBorderColor_Override({hover}={}) {
+function _getBorderColor_Override() {
 
 	const gmDisposition = (game.settings.get(MODULE_ID, 'gm-disposition'));
     const colors = CONFIG.Canvas.dispositionColors;
 	
       if ( this.controlled && !gmDisposition ) return colors.CONTROLLED;	  
-      else if ( (this.controlled && gmDisposition) || (hover ?? this.hover) || canvas.tokens.highlightObjects ) {
+      else if ( (this.controlled && gmDisposition) || this.hover || canvas.tokens.highlightObjects ) {
          let d = parseInt(this.document.disposition);  // change for disposition color option
          if (!game.user.isGM && this.isOwner) return colors.CONTROLLED;
          else if (this.actor?.hasPlayerOwner) return colors.PARTY;
@@ -132,7 +123,8 @@ function _getBorderColor_Override({hover}={}) {
          else if (d === CONST.TOKEN_DISPOSITIONS.NEUTRAL) return colors.NEUTRAL;
          else return colors.HOSTILE;
       }
-   else return null;
+   // Always return a number; null is deprecated since v12 and breaks v13 tinting
+   else return this.getDispositionColor();
   }
 
 
@@ -353,7 +345,7 @@ Hooks.once('setup', function () {
 
     libWrapper.register(MODULE_ID, 'Token.prototype._getBorderColor', _getBorderColor_Override, "OVERRIDE");
 
-    console.log(`Attribute Bar Colors v2.0 | initialized`);
+    console.log(`Attribute Bar Colors v3.1 | initialized`);
 })
 
 
