@@ -1,6 +1,6 @@
 # Attribute Bar Colors for Tokens
 
-[![Discord Server](https://img.shields.io/badge/-Discord-%232c2f33?style=flat-square&logo=discord)](https://discord.gg/VCBXfE8m)
+For help and suggestions:[![Discord Server](https://img.shields.io/badge/-Discord-%232c2f33?style=flat-square&logo=discord)](https://discord.gg/VCBXfE8m)
 
   A simple module to adjust token attribute bar colors in Foundry VTT.
 
