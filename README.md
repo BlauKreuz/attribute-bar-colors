@@ -1,5 +1,8 @@
 # Attribute Bar Colors for Tokens
-A simple module to adjust token attribute bar colors in Foundry VTT.
+
+[![Discord Server](https://img.shields.io/badge/-Discord-%232c2f33?style=flat-square&logo=discord)](https://discord.gg/VCBXfE8m)
+
+  A simple module to adjust token attribute bar colors in Foundry VTT.
 
 This module was made mostly Shadowrun5e in mind, since it uses damage track instead of health track. With this module one can override token Bar 1 starting from short red and ending to full green. However, it can also be used to set any kind of custom colors for almost empty and full cases.
 
